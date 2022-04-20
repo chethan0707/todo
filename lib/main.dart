@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:todo/entities/item.dart';
@@ -17,9 +16,9 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late List<TodoItem> taskList = [];
-  @override
-  void initState() {
-    super.initState();
+
+  Future<List<TodoItem>> fillItemList() async {
+    return taskList = await getItems();
   }
 
   @override
@@ -39,37 +38,46 @@ class _HomeState extends State<Home> {
                 Icons.add,
                 color: Colors.black,
               ),
-              onPressed: () async {
-                taskList = await getItems();
-              },
+              onPressed: () async {},
             ),
           ],
         ),
-        body: ListView.builder(
-          itemCount: taskList.length,
-          itemBuilder: (context, index) {
-            final item = taskList[index];
-            return ListTile(
-              title: Text(item.title),
-              subtitle: Text(item.description),
-              trailing: Checkbox(
-                value: item.isDone,
-                onChanged: (bool? value) async {
-                  http.post(
-                    Uri.parse("http://localhost:8080/todo/update"),
-                    body: json.encode({
-                      "title": item.title,
-                      "description": item.description,
-                      "isDone": !item.isDone
-                    }),
-                    headers: {'Content-Type': 'application/json'},
-                    encoding: Encoding.getByName('utf-8'),
-                  );
-                  taskList = await getItems();
-                  setState(() {});
-                },
-              ),
-            );
+        body: FutureBuilder(
+          future: fillItemList(),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.done:
+                return ListView.builder(
+                  itemCount: taskList.length,
+                  itemBuilder: (context, index) {
+                    final item = taskList[index];
+                    return ListTile(
+                      title: Text(item.title),
+                      subtitle: Text(item.description),
+                      trailing: Checkbox(
+                        value: item.isDone,
+                        onChanged: (bool? value) async {
+                          http.post(
+                            Uri.parse("http://localhost:8080/todo/update"),
+                            body: json.encode({
+                              "title": item.title,
+                              "description": item.description,
+                              "isDone": !item.isDone
+                            }),
+                            headers: {'Content-Type': 'application/json'},
+                            encoding: Encoding.getByName('utf-8'),
+                          );
+                          taskList = await getItems();
+                          setState(() {});
+                        },
+                      ),
+                    );
+                  },
+                );
+
+              default:
+                return const CircularProgressIndicator();
+            }
           },
         ),
       ),
