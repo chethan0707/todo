@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:todo/entities/item.dart';
@@ -51,30 +52,37 @@ class _HomeState extends State<Home> {
                   itemCount: taskList.length,
                   itemBuilder: (context, index) {
                     final item = taskList[index];
-                    return ListTile(
-                      title: Text(item.title),
-                      subtitle: Text(item.description),
-                      trailing: Checkbox(
-                        value: item.isDone,
-                        onChanged: (bool? value) async {
-                          http.post(
-                            Uri.parse("http://localhost:8080/todo/update"),
-                            body: json.encode({
-                              "title": item.title,
-                              "description": item.description,
-                              "isDone": !item.isDone
-                            }),
-                            headers: {'Content-Type': 'application/json'},
-                            encoding: Encoding.getByName('utf-8'),
-                          );
-                          taskList = await getItems();
-                          setState(() {});
-                        },
+                    return Container(
+                      margin: const EdgeInsets.all(2),
+                      padding: const EdgeInsets.all(2),
+                      height: 75,
+                      child: Card(
+                        elevation: 10,
+                        margin: const EdgeInsets.only(left: 3, right: 3),
+                        color: Colors.blueGrey.shade200,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "   " + item.title,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            Checkbox(
+                              value: item.isDone,
+                              onChanged: (value) {
+                                value = log(item.isDone.toString());
+                              },
+                            )
+                          ],
+                        ),
                       ),
                     );
                   },
                 );
-
               default:
                 return const CircularProgressIndicator();
             }
