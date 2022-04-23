@@ -12,7 +12,6 @@ class AddView extends StatefulWidget {
   State<AddView> createState() => _AddViewState();
 }
 
-
 class _AddViewState extends State<AddView> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
