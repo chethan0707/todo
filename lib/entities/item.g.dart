@@ -14,7 +14,7 @@ TodoItem _$TodoItemFromJson(Map<String, dynamic> json) => TodoItem(
     );
 
 Map<String, dynamic> _$TodoItemToJson(TodoItem instance) => <String, dynamic>{
-      'id': instance.id,
+      '_id': instance.id,
       'title': instance.title,
       'description': instance.description,
       'isDone': instance.isDone,

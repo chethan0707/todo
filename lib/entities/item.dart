@@ -3,6 +3,7 @@ part 'item.g.dart';
 
 @JsonSerializable()
 class TodoItem {
+  @JsonKey(name: "_id")
   final String id;
   final String title;
   final String description;
@@ -14,4 +15,5 @@ class TodoItem {
       required this.isDone});
   factory TodoItem.fromJson(Map<String, dynamic> json) =>
       _$TodoItemFromJson(json);
+  Map<String, dynamic> toJson() => _$TodoItemToJson(this);
 }
