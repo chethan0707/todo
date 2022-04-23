@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:todo/entities/item.dart';
-import 'package:todo/views/UpdateView.dart';
+import 'package:todo/views/update_view.dart';
 
 class DescPage extends StatefulWidget {
   final TodoItem item;

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:todo/entities/item.dart';
-import 'package:todo/views/DescPage.dart';
+import 'package:todo/views/desc_view.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
