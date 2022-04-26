@@ -1,4 +1,11 @@
+import 'dart:convert';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/services/auth/firebase_auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'package:todo/utils/utilities.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({Key? key}) : super(key: key);
@@ -12,6 +19,7 @@ class _RegisterViewState extends State<RegisterView> {
   final _passwordController = TextEditingController();
   late String email;
   late String password;
+
   @override
   void initState() {
     _emailController.addListener(() {
@@ -24,12 +32,27 @@ class _RegisterViewState extends State<RegisterView> {
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    Firebase.initializeApp();
+
+    // if (FirebaseAuth.instance.currentUser!.emailVerified) {
+    //   Navigator.of(context).pushNamedAndRemoveUntil('/home/', (route) => false);
+    // }
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.blueGrey.shade400,
         appBar: AppBar(
-          title: const Text('Register'),
+          title: const Text(
+            'Register',
+            style: TextStyle(color: Colors.black),
+          ),
           backgroundColor: Colors.blueGrey,
         ),
         body: Padding(
@@ -46,7 +69,7 @@ class _RegisterViewState extends State<RegisterView> {
                     ),
                   ),
                   backgroundColor: Colors.transparent,
-                  radius: 150,
+                  radius: 125,
                 ),
                 TextField(
                   controller: _emailController,
@@ -97,8 +120,28 @@ class _RegisterViewState extends State<RegisterView> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    //TODO:implement register login
+                  onPressed: () async {
+                    try {
+                      var user = await FirebaseAuthService()
+                          .createUser(email, password);
+                      http.post(
+                        Uri.parse("http://localhost:8080/todo/user/add"),
+                        body: jsonEncode({
+                          "_id": "",
+                          "email": email,
+                          "userName": email,
+                        }),
+                        headers: {'Content-Type': 'application/json'},
+                      );
+                      if (user != null) {
+                        await user.sendEmailVerification();
+                        Navigator.of(context).pushNamed('/emailverify/');
+                      }
+                    } on FirebaseAuthException catch (e) {
+                      await ErrorDialog()
+                          .showErrorDialog(context, e.message.toString());
+                      // await showErrorDialog(context, e.message.toString());
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -124,7 +167,7 @@ class _RegisterViewState extends State<RegisterView> {
                     'Already registered? Login',
                     style: TextStyle(color: Colors.black),
                   ),
-                )
+                ),
               ],
             ),
           ),

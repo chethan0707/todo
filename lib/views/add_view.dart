@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:todo/entities/add_item_dto.dart';
 import 'package:todo/entities/item.dart';
 
 class AddView extends StatefulWidget {
@@ -15,7 +17,7 @@ class AddView extends StatefulWidget {
 class _AddViewState extends State<AddView> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  var title, description;
+  late String title, description;
   @override
   void initState() {
     _descController.addListener(() {
@@ -116,14 +118,16 @@ class _AddViewState extends State<AddView> {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text('Title cannot be empty')));
                     } else {
-                      final item = TodoItem(
-                          id: "",
-                          title: title,
-                          description: description,
-                          isDone: false);
+                      final item = AddItemDTO(
+                          item: TodoItem(
+                              id: "",
+                              description: description,
+                              title: title,
+                              isDone: false),
+                          email: FirebaseAuth.instance.currentUser!.email);
                       final response = await http.post(
                         Uri.parse("http://localhost:8080/todo/add"),
-                        body: jsonEncode(item.toJson()),
+                        body: jsonEncode(item),
                         headers: {'Content-Type': 'application/json'},
                         encoding: Encoding.getByName('utf-8'),
                       );

@@ -1,23 +1,32 @@
-// import 'dart:developer';
+import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
 
-// import 'package:firebase_auth/firebase_auth.dart'
-//     show FirebaseAuthException, FirebaseAuth;
-// import 'package:todo/entities/user.dart';
+class FirebaseAuthService {
 
-// class UserNotLoggedInException implements Exception {}
+  final _firebase = FirebaseAuth.instance;
+  FirebaseAuth getInstance() {
+    return _firebase;
+  }
 
-// class FirebaseAuthService {
-//   User getUser() {
-//     try {
-//       var user = FirebaseAuth.instance.currentUser;
-//       if (user == null) {
-//         throw UserNotLoggedInException();
-//       } else {
-//         return User(email: user.email, isEmailVerified: user.emailVerified);
-//       }
-//     } on FirebaseAuthException catch (e) {
-//       log(e.message.toString());
-//       throw UserNotLoggedInException();
-//     }
-//   }
-// }
+  User? getUser() {
+    return _firebase.currentUser;
+  }
+
+  User? signIn(String email, String password) {
+    try {
+
+
+      _firebase.signInWithEmailAndPassword(email: email, password: password);
+      return getUser();
+    } on FirebaseAuthException catch (e) {
+      log(e.message.toString());
+    }
+    return null;
+  }
+
+  Future<User?> createUser(String email, String password) async {
+    var res = await _firebase.createUserWithEmailAndPassword(
+        email: email, password: password);
+    return res.user;
+  }
+}

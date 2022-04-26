@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/utils/utilities.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -24,12 +26,22 @@ class _LoginViewState extends State<LoginView> {
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.blueGrey.shade400,
         appBar: AppBar(
-          title: const Text('Login'),
+          title: const Text(
+            'Login',
+            style: TextStyle(color: Colors.black),
+          ),
           backgroundColor: Colors.blueGrey,
         ),
         body: Padding(
@@ -100,8 +112,26 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    //TODO:implement login logic
+                  onPressed: () async {
+                    try {
+                      email = _emailController.text;
+                      password = _passwordController.text;
+                      final user = await FirebaseAuth.instance
+                          .signInWithEmailAndPassword(
+                              email: email, password: password);
+                      if (user.user!.emailVerified) {
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/home/', (route) => false);
+                      }
+                    } on FirebaseAuthException catch (e) {
+                      if (email.isEmpty || password.isEmpty) {
+                        ErrorDialog().showErrorDialog(context,
+                            'email and password fields cannot be empty');
+                      } else {
+                        ErrorDialog()
+                            .showErrorDialog(context, e.message.toString());
+                      }
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -121,10 +151,12 @@ class _LoginViewState extends State<LoginView> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushNamed('/signup/');
+                    Navigator.of(context).popAndPushNamed(
+                      '/signup/',
+                    );
                   },
                   child: const Text(
-                    "don't have account? Login",
+                    "don't have account? Register",
                     style: TextStyle(color: Colors.black),
                   ),
                 )

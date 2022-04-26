@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:todo/entities/item.dart';
@@ -67,8 +68,12 @@ class _DescPageState extends State<DescPage> {
                 ),
                 onPressed: () async {
                   final response = await http.delete(
-                    Uri.parse("http://localhost:8080/todo/delete")
-                        .replace(queryParameters: {"_id": widget.item.id}),
+                    Uri.parse("http://localhost:8080/todo/delete").replace(
+                      queryParameters: {
+                        "_id": widget.item.id,
+                        "email": FirebaseAuth.instance.currentUser!.email
+                      },
+                    ),
                   );
                   Navigator.pop(context);
                   log(widget.item.id.toString());

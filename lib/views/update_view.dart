@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer';
 
@@ -15,7 +16,7 @@ class UpdateView extends StatefulWidget {
 class _UpdateView extends State<UpdateView> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  var title, description;
+  late String title, description;
   @override
   void initState() {
     _descController.text = widget.item.description;
@@ -127,7 +128,10 @@ class _UpdateView extends State<UpdateView> {
                           isDone: widget.item.isDone);
                       final response = await http.post(
                         Uri.parse("http://localhost:8080/todo/update"),
-                        body: jsonEncode(item.toJson()),
+                        body: jsonEncode({
+                          "item": item.toJson(),
+                          "email": FirebaseAuth.instance.currentUser!.email
+                        }),
                         headers: {'Content-Type': 'application/json'},
                         encoding: Encoding.getByName('utf-8'),
                       );

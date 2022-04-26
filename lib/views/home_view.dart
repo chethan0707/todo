@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
@@ -44,6 +45,15 @@ class _HomeState extends State<Home> {
               Navigator.of(context).pushNamed('/add/');
             },
           ),
+          TextButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.of(context).popAndPushNamed('/signin/');
+              },
+              child: const Text(
+                'Sign-out',
+                style: TextStyle(color: Colors.black),
+              ))
         ],
       ),
       body: FutureBuilder(
@@ -81,19 +91,23 @@ class _HomeState extends State<Home> {
                               Checkbox(
                                 value: item.isDone,
                                 onChanged: (value) async {
+                                  var email =
+                                      FirebaseAuth.instance.currentUser!.email;
                                   http.post(
                                     Uri.parse(
                                         "http://localhost:8080/todo/update"),
                                     body: json.encode({
-                                      "_id": item.id,
-                                      "title": item.title,
-                                      "description": item.description,
-                                      "isDone": !item.isDone
+                                      "item": {
+                                        "_id": item.id,
+                                        "title": item.title,
+                                        "description": item.description,
+                                        "isDone": !item.isDone
+                                      },
+                                      "email": email,
                                     }),
                                     headers: {
                                       'Content-Type': 'application/json'
                                     },
-                                    encoding: Encoding.getByName('utf-8'),
                                   );
                                   taskList = await getItems();
                                   setState(() {});
@@ -116,7 +130,7 @@ class _HomeState extends State<Home> {
                 );
               }
             default:
-              return const CircularProgressIndicator();
+              return const Center(child: CircularProgressIndicator());
           }
         },
       ),
@@ -124,8 +138,11 @@ class _HomeState extends State<Home> {
   }
 
   Future<List<TodoItem>> getItems() async {
-    final response =
-        await http.get(Uri.parse("http://localhost:8080/todo/items"));
+    final response = await http.get(
+      Uri.parse("http://localhost:8080/todo/items").replace(
+        queryParameters: {"email": FirebaseAuth.instance.currentUser!.email},
+      ),
+    );
     var jsonBody = json.decode(response.body);
     var items =
         List<TodoItem>.from(jsonBody.map((model) => TodoItem.fromJson(model)));
